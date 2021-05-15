@@ -1,8 +1,9 @@
+@Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1')
+
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
-import java.util.TimeZone
 
-@Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1')
+import java.sql.Time
 
 Object vaccination
 String msg = "";
@@ -11,11 +12,11 @@ String base = 'https://cdn-api.co-vin.in'
 def vaccinationOutput = new RESTClient(base)
 vaccinationOutput.contentType = ContentType.JSON
 pincode = ["560037", "560066", "560007", "560008", "110091"]
-
-
 def tomorrow = new Date() + 1
-String date = tomorrow.format("dd-MM-yyyy", TimeZone.getTimeZone("Asia/Calcutta"))
-//def date = "15-05-2021"
+def tz = TimeZone.getTimeZone("Asia/Calcutta")
+String date = tomorrow.format("dd-MM-yyyy", tz)
+String time = tomorrow.format("HH:mm", tz)
+//date = "25-05-2021"
 
 String[] favouriteCenters = [
         "MANIPAL",
@@ -29,7 +30,6 @@ String[] favouriteCenters = [
 ]
 
 for (int j = 0; j < pincode.size(); j++) {
-
     def params = [pincode: pincode[j], date: date]
     vaccinationOutput.get(path: '/api/v2/appointment/sessions/public/calendarByPin', query: params) { response, json ->
         //println response.status
@@ -44,7 +44,8 @@ for (int j = 0; j < pincode.size(); j++) {
         String available_slot = i.sessions.available_capacity
         String center = i.name
         if (CheckCenter(center.toUpperCase(), favouriteCenters) == true) {
-            if (available_slot.equals("[0]") || available_slot.equals("[0, 0, 0, 0]")) {
+            if (available_slot.equals("[0]") || available_slot.equals("[0, 0, 0, 0]")
+                    ||  available_slot.equals("[0, 0, 0, 0, 0]")) {
                 msg = msg + "pincode: " + pincode[j] + " : " + i.name + " : " + "No slots" + "\n"
             } else {
                 msg = msg + "pincode: " + pincode[j] + " : " + i.name + " : " + available_slot + " slots" + "\n"
@@ -58,14 +59,13 @@ for (int j = 0; j < pincode.size(); j++) {
 message = "{\"text\":\"" + msg + "\"}"
 
 if (msg.isEmpty()) {
-    println("no center found for date: " + date)
+    println(date +" "+time+": no center found for date: " + date)
 } else if (slotFound) {
-   // println(message)
+    // println(message)
+    println(date + " " + time+" : slot found ")
     PosttoSlack(message)
-}
-else
-{
-    println(date+": no slot found")
+} else {
+    println(date +" "+time+ ": no slot found")
 }
 
 def PosttoSlack(String messageText) {
@@ -75,13 +75,11 @@ def PosttoSlack(String messageText) {
     slackwebhook.setRequestProperty("Content-Type", "application/json")
     slackwebhook.getOutputStream().write(messageText.getBytes("UTF-8"));
     def postRC = slackwebhook.getResponseCode();
-   // println(postRC);
+    // println(postRC);
     if (postRC.equals(200)) {
-        println("Post OK "+slackwebhook.getInputStream().getText());
-    }
-
-    else if (!postRC.equals(200)) {
-        println("Post Not OK "+slackwebhook.getInputStream().getText());
+        println("Post OK " + slackwebhook.getInputStream().getText());
+    } else if (!postRC.equals(200)) {
+        println("Post Not OK " + slackwebhook.getInputStream().getText());
 
     }
 }
