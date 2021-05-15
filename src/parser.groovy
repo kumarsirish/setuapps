@@ -24,9 +24,11 @@ String[] favouriteCenters = [
         "YAMLURU",
         "COMMAND",
         "SIDDAPURA",
+        "VIBUTHIPURA",
         "KODIHALLI UPHC",
         "APOLLO",
-        "DGD MAYUR VIHAR"
+        "C V RAMAN HOSPITAL"
+        //"DGD MAYUR VIHAR"
 ]
 
 for (int j = 0; j < pincode.size(); j++) {
