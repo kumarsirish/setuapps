@@ -1,13 +1,7 @@
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
+import java.util.TimeZone
 
-/*
-System.getProperties().put("proxySet", "true")
-System.getProperties().put("http.proxyHost", "www-proxy-idc.in.oracle.com")
-System.getProperties().put("https.proxyHost", "www-proxy-idc.in.oracle.com")
-System.getProperties().put("http.proxyPort", "80")
-System.getProperties().put("https.proxyPort", "80")
-*/
 @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1')
 
 Object vaccination
@@ -17,7 +11,11 @@ String base = 'https://cdn-api.co-vin.in'
 def vaccinationOutput = new RESTClient(base)
 vaccinationOutput.contentType = ContentType.JSON
 pincode = ["560037", "560066", "560007", "560008", "110091"]
-def date = "15-05-2021"
+
+
+def tomorrow = new Date() + 1
+String date = tomorrow.format("dd-MM-yyyy", TimeZone.getTimeZone("Asia/Calcutta"))
+//def date = "15-05-2021"
 
 String[] favouriteCenters = [
         "MANIPAL",
@@ -65,17 +63,26 @@ if (msg.isEmpty()) {
    // println(message)
     PosttoSlack(message)
 }
+else
+{
+    println(date+": no slot found")
+}
 
 def PosttoSlack(String messageText) {
-    def slackwebhook = new URL("https://hooks.slack.com/services/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").openConnection();
+    def slackwebhook = new URL("https://hooks.slack.com/services/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").openConnection();
     slackwebhook.setRequestMethod("POST")
     slackwebhook.setDoOutput(true)
     slackwebhook.setRequestProperty("Content-Type", "application/json")
     slackwebhook.getOutputStream().write(messageText.getBytes("UTF-8"));
     def postRC = slackwebhook.getResponseCode();
-    println(postRC);
+   // println(postRC);
     if (postRC.equals(200)) {
-        println(slackwebhook.getInputStream().getText());
+        println("Post OK "+slackwebhook.getInputStream().getText());
+    }
+
+    else if (!postRC.equals(200)) {
+        println("Post Not OK "+slackwebhook.getInputStream().getText());
+
     }
 }
 
