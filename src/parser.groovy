@@ -2,7 +2,6 @@
 
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
-
 import java.sql.Time
 
 Object vaccination
@@ -11,7 +10,7 @@ Boolean slotFound = false
 String base = 'https://cdn-api.co-vin.in'
 def vaccinationOutput = new RESTClient(base)
 vaccinationOutput.contentType = ContentType.JSON
-pincode = ["560037", "560066", "560007", "560008", "110091"]
+pincode = ["560037", "560066", "560007", "560008", "562114",  "110091"]
 def tomorrow = new Date() + 1
 def tz = TimeZone.getTimeZone("Asia/Calcutta")
 String date = tomorrow.format("dd-MM-yyyy", tz)
@@ -27,6 +26,7 @@ String[] favouriteCenters = [
         "VIBUTHIPURA",
         "KODIHALLI UPHC",
         "APOLLO",
+        "OVUM HOSPITAL",
         "C V RAMAN HOSPITAL"
         //"DGD MAYUR VIHAR"
 ]
@@ -47,27 +47,25 @@ for (int j = 0; j < pincode.size(); j++) {
         String center = i.name
         if (CheckCenter(center.toUpperCase(), favouriteCenters) == true) {
             if (available_slot.equals("[0]") || available_slot.equals("[0, 0, 0, 0]")
-                    ||  available_slot.equals("[0, 0, 0, 0, 0]")) {
+                    || available_slot.equals("[0, 0, 0, 0, 0]")) {
                 msg = msg + "pincode: " + pincode[j] + " : " + i.name + " : " + "No slots" + "\n"
             } else {
                 msg = msg + "pincode: " + pincode[j] + " : " + i.name + " : " + available_slot + " slots" + "\n"
                 slotFound = true
             }
         }
-
     }
-
 }
 message = "{\"text\":\"" + msg + "\"}"
 
 if (msg.isEmpty()) {
-    println(date +" "+time+": no center found for date: " + date)
+    println(date + " " + time + ": no center found for date: " + date)
 } else if (slotFound) {
     // println(message)
-    println(date + " " + time+" : slot found ")
+    println(date + " " + time + " : slot found ")
     PosttoSlack(message)
 } else {
-    println(date +" "+time+ ": no slot found")
+    println(date + " " + time + ": no slot found")
 }
 
 def PosttoSlack(String messageText) {
