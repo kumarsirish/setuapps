@@ -31,7 +31,7 @@ if (districts != null && districts.size() > 1) {
             for (int i = 0; i < vaccination.centers.size(); i++) {
                 for (int k = 0; k < vaccination.centers[i].sessions.size(); k++) {
                     session = vaccination.centers[i].sessions[k]
-                    if (session.min_age_limit == 18 && session.available_capacity != 0) {
+                    if (session.min_age_limit == 18 && session.available_capacity_dose1 != 0) {
                         msg = msg + "18+ vaccines: " + districtMap[districts[j]] + ": " + session.date + ": " + session.vaccine + ": capacity: " + session.available_capacity + " center: " + vaccination.centers[i].name + "\n"
                     }
                 }
