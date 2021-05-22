@@ -21,6 +21,8 @@ String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
 
+def min_age = 18
+def dose = 1
 if (districts != null && districts.size() > 1) {
     for (int j = 0; j < districts.size(); j++) {
         def params = [district_id: districts[j], date: date]
@@ -31,10 +33,14 @@ if (districts != null && districts.size() > 1) {
             for (int i = 0; i < vaccination.centers.size(); i++) {
                 for (int k = 0; k < vaccination.centers[i].sessions.size(); k++) {
                     session = vaccination.centers[i].sessions[k]
-                    if (session.min_age_limit == 18 && session.available_capacity_dose1 != 0) {
-                        msg = msg + "For 18+: " + districtMap[districts[j]] + ": " + session.date + ": " +
-                                session.vaccine + ": capacity: " + session.available_capacity + " center: " +
-                                vaccination.centers[i].name + ":" + vaccination.centers[i].address+"\n"
+                    if (dose == 1)
+                        dose_capacity = session.available_capacity_dose1
+                    else
+                        dose_capacity = session.available_capacity_dose2
+                    if (session.min_age_limit == min_age && dose_capacity != 0) {
+                        msg = msg + "For " + min_age + "+: " + districtMap[districts[j]] + ": " + session.date + ": " +
+                                session.vaccine + ": capacity dose" + dose + ": [" + dose_capacity + "] center: " +
+                                vaccination.centers[i].name + ": pincode: " + vaccination.centers[i].pincode + "\n"
                     }
                 }
             }
