@@ -12,49 +12,52 @@ vaccinationOutput.contentType = ContentType.JSON
 def districts = ["294", "265", "276"] //294: BBMP, 265: Bangalore Urban: 276: Bangalore Rural: 145: East Delhi
 // state = "16" //Karnataka
 // state = "9" //Delhi
-def today = new Date()
-def tz = TimeZone.getTimeZone("Asia/Calcutta")
-String date = today.format("dd-MM-yyyy", tz)
-String time = today.format("HH:mm", tz)
-def session
+def today, tz, session
+String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-
 def min_age = 18
-def dose = 1
-if (districts != null && districts.size() > 1) {
-    for (int j = 0; j < districts.size(); j++) {
-        def params = [district_id: districts[j], date: date]
-        vaccinationOutput.get(path: '/api/v2/appointment/sessions/public/calendarByDistrict', query: params) { response, json ->
-            //println response.status
-            // println json
-            vaccination = json
-            for (int i = 0; i < vaccination.centers.size(); i++) {
-                for (int k = 0; k < vaccination.centers[i].sessions.size(); k++) {
-                    session = vaccination.centers[i].sessions[k]
-                    if (dose == 1)
-                        dose_capacity = session.available_capacity_dose1
-                    else
-                        dose_capacity = session.available_capacity_dose2
-                    if (session.min_age_limit == min_age && dose_capacity != 0) {
-                        msg = msg + "For " + min_age + "+: " + districtMap[districts[j]] + ": " + session.date + ": " +
-                                session.vaccine + ": capacity dose" + dose + ": [" + dose_capacity + "] center: " +
-                                vaccination.centers[i].name + ": pincode: " + vaccination.centers[i].pincode + "\n"
+def dose = 2
+int sleepSeconds = 60
+
+while (true) {
+    msg = ""
+    today = new Date(); tz = TimeZone.getTimeZone("Asia/Calcutta")
+    date = today.format("dd-MM-yyyy", tz); time = today.format("HH:mm", tz)
+    if (districts != null && districts.size() > 1) {
+        for (int j = 0; j < districts.size(); j++) {
+            def params = [district_id: districts[j], date: date]
+            vaccinationOutput.get(path: '/api/v2/appointment/sessions/public/calendarByDistrict', query: params) { response, json ->
+                //println response.status
+                // println json
+                vaccination = json
+                for (int i = 0; i < vaccination.centers.size(); i++) {
+                    for (int k = 0; k < vaccination.centers[i].sessions.size(); k++) {
+                        session = vaccination.centers[i].sessions[k]
+                        if (dose == 1)
+                            dose_capacity = session.available_capacity_dose1
+                        else
+                            dose_capacity = session.available_capacity_dose2
+                        if (session.min_age_limit == min_age && dose_capacity != 0) {
+                            msg = msg + "For " + min_age + "+: " + districtMap[districts[j]] + ": " + session.date + ": " +
+                                    session.vaccine + ": available dose" + dose + ": [" + dose_capacity + "] : " +
+                                    vaccination.centers[i].name + ": " + vaccination.centers[i].pincode + "\n"
+                        }
                     }
                 }
             }
         }
     }
+    message = "{\"text\":\"" + msg + "\"}"
+    if (msg.isEmpty()) {
+        println(date + " " + time + ": no center found for date for next 7 days: ")
+    } else {
+        println(date + " " + time + " : slot found ")
+        PosttoSlack(message)
+    }
+    sleep(sleepSeconds*1000)
 }
-message = "{\"text\":\"" + msg + "\"}"
-if (msg.isEmpty()) {
-    println(date + " " + time + ": no center found for date for next 7 days: ")
-} else {
-    println(date + " " + time + " : slot found ")
-    PosttoSlack(message)
-}
-
 def PosttoSlack(String messageText) {
     def slackwebhook = new URL("https://hooks.slack.com/services/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").openConnection();
     slackwebhook.setRequestMethod("POST")
