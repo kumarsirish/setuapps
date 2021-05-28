@@ -17,8 +17,8 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-def min_age = 18
-def dose = 2
+def min_age = 45
+def dose = 1
 int sleepSeconds = 60
 
 while (true) {
