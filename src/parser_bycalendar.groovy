@@ -19,7 +19,7 @@ def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Ru
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
 String slackWebhook="https://hooks.slack.com/services/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"
 def min_age = 45
-def dose = 1
+def dose = 2
 int sleepSeconds = 180
 
 while (true) {
