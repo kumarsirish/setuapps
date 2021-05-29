@@ -17,8 +17,8 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-String slackWebhook="https://hooks.slack.com/services/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"
-def min_age = 18
+String slackWebhook="https://hooks.slack.com/services/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"
+def min_age = 45
 def dose = 1
 int sleepSeconds = 180
 
