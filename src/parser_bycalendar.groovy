@@ -17,7 +17,7 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-def slackWebhook="https://hooks.slack.com/services/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"
+def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 def min_age = 45
 def dose = 2
 int sleepSeconds = 180
@@ -25,7 +25,7 @@ int sleepSeconds = 180
 while (true) {
     msg = ""
     today = new Date(); tz = TimeZone.getTimeZone("Asia/Calcutta")
-    date = today.format("dd-MM-yyyy", tz); time = today.format("HH:mm", tz)
+    date = today.format("dd-MM", tz); time = today.format("HH:mm", tz)
     if (districts != null && districts.size() > 1) {
         for (int j = 0; j < districts.size(); j++) {
             def params = [district_id: districts[j], date: date]
@@ -41,22 +41,30 @@ while (true) {
                         else
                             dose_capacity = session.available_capacity_dose2
                         if (session.min_age_limit == min_age && dose_capacity != 0) {
-                            msg = msg + "For " + min_age + "+: " + districtMap[districts[j]] + ": " + session.date + ": " +
-                                    session.vaccine + ": available dose" + dose + ": [" + dose_capacity + "] : " +
-                                    vaccination.centers[i].name + ": " + vaccination.centers[i].pincode + "\n"
+                            msg = msg + session.date + " " +
+                                    session.vaccine +  " [" + dose_capacity + "] " +
+                                    vaccination.centers[i].name + " " + vaccination.centers[i].pincode + "\n"
                         }
                     }
                 }
             }
         }
     }
-    message = "{\"text\":\"" + msg + "\"}"
+
+    message = "{\"text\":\"" + "For "+min_age+": "+"Dose-"+dose+" \n"+ msg + "\"}"
     if (msg.isEmpty()) {
         println(date + " " + time + ": no center for " + min_age+ "dose: "+ dose +" next 7 days: ")
     } else {
         println(date + " " + time + " : slot found ")
         println(message)
-        PosttoSlack(message, slackWebhook)
+        //Check msg length. slack notifications are disabled if message length exceeds 4000 chars
+        if ( msg.length() < 3900) {
+            if (!slackWebhook.equalsIgnoreCase("NONE")) {
+                PosttoSlack(message, slackWebhook)
+            } else {
+                println("Can't post to webhook since its set to NONE")
+            }
+        }
     }
     sleep(sleepSeconds*1000)
 }
