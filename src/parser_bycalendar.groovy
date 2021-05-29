@@ -17,7 +17,7 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-String slackWebhook="https://hooks.slack.com/services/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"
+String slackWebhook="https://hooks.slack.com/services/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"
 def min_age = 45
 def dose = 2
 int sleepSeconds = 180
@@ -52,7 +52,7 @@ while (true) {
     }
     message = "{\"text\":\"" + msg + "\"}"
     if (msg.isEmpty()) {
-        println(date + " " + time + ": no center found for date for next 7 days: ")
+        println(date + " " + time + ": no center for " + min_age+ "dose: "+ dose +" next 7 days: ")
     } else {
         println(date + " " + time + " : slot found ")
         println(message)
