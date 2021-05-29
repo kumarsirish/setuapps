@@ -17,9 +17,10 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-def min_age = 45
+String slackWebhook="https://hooks.slack.com/services/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"
+def min_age = 18
 def dose = 1
-int sleepSeconds = 60
+int sleepSeconds = 180
 
 while (true) {
     msg = ""
@@ -54,12 +55,13 @@ while (true) {
         println(date + " " + time + ": no center found for date for next 7 days: ")
     } else {
         println(date + " " + time + " : slot found ")
-        PosttoSlack(message)
+        println(message)
+        PosttoSlack(message, slackWebhook)
     }
     sleep(sleepSeconds*1000)
 }
-def PosttoSlack(String messageText) {
-    def slackwebhook = new URL("https://hooks.slack.com/services/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").openConnection();
+def PosttoSlack(String messageText, String webHook) {
+    def slackwebhook = new URL(webHook).openConnection();
     slackwebhook.setRequestMethod("POST")
     slackwebhook.setDoOutput(true)
     slackwebhook.setRequestProperty("Content-Type", "application/json")
