@@ -29,9 +29,8 @@ def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field int minimum_available_dose = 3
 int sleepSeconds = 240
 
-
-
-int sendAliveMsg = 3600/sleepSeconds
+int chimeFreq = 2 // every 2 hours
+int sendAliveMsg = chimeFreq * (3600 / sleepSeconds)
 int iterationCount = 0
 String hourlyChime
 
@@ -63,22 +62,23 @@ while (true) {
                                     " [" + dose_capacity + "] " +
                                     vaccination.centers[i].name + " " + vaccination.centers[i].pincode + "\n"
                         }
-                        if ( iterationCount >= sendAliveMsg) {
+                        if (iterationCount >= sendAliveMsg) {
                             iterationCount = 0
-                            hourlyChime = "Sending hourly chime. Poll Freq is "+sleepSeconds/60+ " mniutes"
+                            hourlyChime = "sending " + chimeFreq+ " hourly chime. Poll Freq is " + sleepSeconds / 60 + " minutes"
                         }
                     }
                 }
             }
         }
     }
-    def header = " " + min_age + ": " + "Dose-" + doseType + " Fee:"+fee_type+" "
+    def header = " " + min_age + "+: " + "Dose-" + doseType + " Fee:" + fee_type + " "
+    timeStamp = date + " " + time + ": "
+    message = "{\"text\":\"" + "For " + header + "\n" + msg + "\"}"
 
-    message = "{\"text\":\"" + "For " + header +"\n" + msg + "\"}"
     if (msg.isEmpty()) {
-        println(date + " " + time + ": No center for next 7 days for" + header)
+        println(timeStamp + "No center for next 7 days for" + header)
     } else {
-        println(date + " " + time + " : slot found ")
+        println(timeStamp + " slot found ")
         println(message)
         //Check msg length. slack notifications are disabled if message length exceeds 4000 chars
         if (msg.length() < 3900) {
@@ -90,7 +90,7 @@ while (true) {
         }
     }
     if (!hourlyChime.isEmpty()) {
-        PosttoSlack("{\"text\":\"" + "For " + header +"\n" + hourlyChime + "\"}", slackWebhook)
+        PosttoSlack("{\"text\":\"" + timeStamp+ "For " + header + " " + hourlyChime + "\"}", slackWebhook)
     }
     sleep(sleepSeconds * 1000)
 }
