@@ -2,6 +2,9 @@
 
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
+import groovy.transform.Field
+
+
 import java.sql.Time
 
 Object vaccination
@@ -17,13 +20,24 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
+@Field int[] preferredPIN = [560037, 560066, 560043, 560103]
 def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
-def min_age = 18
-def dose = 1
+@Field def min_age = 45
+@Field def doseType = 2
+@Field String vaccine = "COVISHIELD"
+@Field String fee_type = "Paid"
+@Field int minimum_available_dose = 3
 int sleepSeconds = 180
+
+
+
+int sendAliveMsg = 3600/sleepSeconds
+int iterationCount = 0
+String hourlyChime
 
 while (true) {
     msg = ""
+    hourlyChime = ""
     today = new Date(); tz = TimeZone.getTimeZone("Asia/Calcutta")
     date = today.format("dd-MM", tz); time = today.format("HH:mm", tz)
     if (districts != null && districts.size() > 1) {
@@ -36,29 +50,38 @@ while (true) {
                 for (int i = 0; i < vaccination.centers.size(); i++) {
                     for (int k = 0; k < vaccination.centers[i].sessions.size(); k++) {
                         session = vaccination.centers[i].sessions[k]
-                        if (dose == 1)
+                        if (doseType == 1)
                             dose_capacity = session.available_capacity_dose1
                         else
                             dose_capacity = session.available_capacity_dose2
-                        if (session.min_age_limit == min_age && dose_capacity != 0) {
+                        if (CheckConditions(session.min_age_limit,
+                                dose_capacity,
+                                session.vaccine,
+                                vaccination.centers[i].fee_type,
+                                vaccination.centers[i].pincode)) {
                             msg = msg + session.date + " " +
-                                    session.vaccine +  " [" + dose_capacity + "] " +
+                                    " [" + dose_capacity + "] " +
                                     vaccination.centers[i].name + " " + vaccination.centers[i].pincode + "\n"
+                        }
+                        if ( iterationCount >= sendAliveMsg) {
+                            iterationCount = 0
+                            hourlyChime = "Sending hourly chime"
                         }
                     }
                 }
             }
         }
     }
+    def header = " " + min_age + ": " + "Dose-" + doseType + " Fee:"+fee_type+" "
 
-    message = "{\"text\":\"" + "For "+min_age+": "+"Dose-"+dose+" \n"+ msg + "\"}"
+    message = "{\"text\":\"" + "For " + header +"\n" + msg + "\"}"
     if (msg.isEmpty()) {
-        println(date + " " + time + ": no center for " + min_age+ "dose: "+ dose +" next 7 days: ")
+        println(date + " " + time + ": No center for next 7 days for" + header)
     } else {
         println(date + " " + time + " : slot found ")
         println(message)
         //Check msg length. slack notifications are disabled if message length exceeds 4000 chars
-        if ( msg.length() < 3900) {
+        if (msg.length() < 3900) {
             if (!slackWebhook.equalsIgnoreCase("NONE")) {
                 PosttoSlack(message, slackWebhook)
             } else {
@@ -66,8 +89,12 @@ while (true) {
             }
         }
     }
-    sleep(sleepSeconds*1000)
+    if (!hourlyChime.isEmpty()) {
+        PosttoSlack("{\"text\":\"" + "For " + header +"\n" + hourlyChime + "\"}", slackWebhook)
+    }
+    sleep(sleepSeconds * 1000)
 }
+
 def PosttoSlack(String messageText, def webHook) {
     def slackwebhook = new URL(webHook).openConnection();
     slackwebhook.setRequestMethod("POST")
@@ -81,4 +108,16 @@ def PosttoSlack(String messageText, def webHook) {
     } else if (!postRC.equals(200)) {
         println("Post Not OK " + slackwebhook.getInputStream().getText());
     }
+}
+
+boolean CheckConditions(int age, int doseCapacity, String vaccineName, String feeType, int pinCode) {
+    if (age == min_age &&
+            doseCapacity >= minimum_available_dose &&
+            vaccineName.equalsIgnoreCase(vaccine) &&
+            feeType.equalsIgnoreCase(fee_type) &&
+            preferredPIN.contains(pinCode)) {
+        return true
+    }
+    return false
+
 }
