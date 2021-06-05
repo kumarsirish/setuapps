@@ -27,7 +27,7 @@ def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field String vaccine = "COVISHIELD"
 @Field String fee_type = "Paid"
 @Field int minimum_available_dose = 3
-int sleepSeconds = 180
+int sleepSeconds = 240
 
 
 
@@ -65,7 +65,7 @@ while (true) {
                         }
                         if ( iterationCount >= sendAliveMsg) {
                             iterationCount = 0
-                            hourlyChime = "Sending hourly chime"
+                            hourlyChime = "Sending hourly chime. Poll Freq is "+sleepSeconds/60+ " mniutes"
                         }
                     }
                 }
