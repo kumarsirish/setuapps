@@ -20,13 +20,13 @@ String date, time
 String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-@Field int[] preferredPIN = [560037, 560066, 560043, 560103]
+@Field int[] preferredPIN = [560037, 560066, 560043, 560103, 560034]
 def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
-@Field def min_age = 45
+@Field def min_age = 18
 @Field def doseType = 2
 @Field String vaccine = "COVISHIELD"
 @Field String fee_type = "Paid"
-@Field int minimum_available_dose = 3
+@Field int minimum_available_dose = 2
 int sleepSeconds = 240
 
 int chimeFreq = 2 // every 2 hours
@@ -37,6 +37,7 @@ String hourlyChime
 while (true) {
     msg = ""
     hourlyChime = ""
+    iterationCount++
     today = new Date(); tz = TimeZone.getTimeZone("Asia/Calcutta")
     date = today.format("dd-MM", tz); time = today.format("HH:mm", tz)
     if (districts != null && districts.size() > 1) {
