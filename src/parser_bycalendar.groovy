@@ -31,7 +31,7 @@ int sleepSeconds = 240
 
 int chimeFreq = 2 // every 2 hours
 int sendAliveMsg = chimeFreq * (3600 / sleepSeconds)
-int iterationCount = 0
+int iterationCount = 100 // Set to higher value so that chime gets tested. It will reset to 0 in the loop below which is fine.
 String hourlyChime
 
 while (true) {
