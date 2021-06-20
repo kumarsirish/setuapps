@@ -3,8 +3,6 @@
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
 import groovy.transform.Field
-
-
 import java.sql.Time
 
 Object vaccination
@@ -17,7 +15,6 @@ def districts = ["294", "265", "276"] //294: BBMP, 265: Bangalore Urban: 276: Ba
 // state = "9" //Delhi
 def today, tz, session
 String date, time
-String msg = ""
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
 @Field int[] preferredPIN = [560037, 560066, 560103, 560034, 560076,560011]
@@ -25,7 +22,7 @@ def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field def min_age = 45
 @Field def doseType = 2
 @Field String vaccine = "COVISHIELD"
-@Field String fee_type = "Paid"
+@Field String fee_type = "Free" //not used currently in comparison
 @Field int minimum_available_dose = 2
 int sleepSeconds = 1800 //30 minutes
 
@@ -33,6 +30,8 @@ int chimeFreq = 4 // every 2 hours
 int sendAliveMsg = chimeFreq * (3600 / sleepSeconds)
 int iterationCount = 100 // Set to higher value so that chime gets tested. It will reset to 0 in the loop below which is fine.
 String hourlyChime
+def msgList = []
+def mapCounter = 0
 
 while (true) {
     msg = ""
@@ -59,9 +58,9 @@ while (true) {
                                 session.vaccine,
                                 vaccination.centers[i].fee_type,
                                 vaccination.centers[i].pincode)) {
-                            msg = msg + session.date + " " +
-                                    " [" + dose_capacity + "] " +
+                            String msgText = vaccination.centers[i].fee_type.toUpperCase()+" [" + dose_capacity + "] " +
                                     vaccination.centers[i].name + " " + vaccination.centers[i].pincode + "\n"
+                            msgList.add(mapCounter++,[session.date,msgText]) //append to msg list, it will used later for sorting on date
                         }
                         if (iterationCount >= sendAliveMsg) {
                             iterationCount = 0
@@ -72,17 +71,16 @@ while (true) {
             }
         }
     }
-    def header = " " + min_age + "+: " + "Dose-" + doseType + " Fee:" + fee_type + " "
+    def header = " " + min_age + "+: " + "Dose-" + doseType +" "
     timeStamp = date + " " + time + ": "
-    message = "{\"text\":\"" + "For " + header + "\n" + msg + "\"}"
 
-    if (msg.isEmpty()) {
+    message = "{\"text\":\"" + "For " + header + "\n" + msgList.sort{it[0]}.toString() + "\"}" //sort on first field
+    if (msgList.size() <1) {
         println(timeStamp + "No center for next 7 days for" + header)
     } else {
         println(timeStamp + " slot found ")
-        println(message)
         //Check msg length. slack notifications are disabled if message length exceeds 4000 chars
-        if (msg.length() < 3900) {
+        if (msgList.toString().length() < 3900) {
             if (!slackWebhook.equalsIgnoreCase("NONE")) {
                 PosttoSlack(message, slackWebhook)
             } else {
@@ -94,6 +92,9 @@ while (true) {
         PosttoSlack("{\"text\":\"" + timeStamp+ "For " + header + " " + hourlyChime + "\"}", slackWebhook)
     }
     sleep(sleepSeconds * 1000)
+    //Reset the list
+    msgList=[]
+    mapCounter=0
 }
 
 def PosttoSlack(String messageText, def webHook) {
@@ -115,10 +116,9 @@ boolean CheckConditions(int age, int doseCapacity, String vaccineName, String fe
     if (age == min_age &&
             doseCapacity >= minimum_available_dose &&
             vaccineName.equalsIgnoreCase(vaccine) &&
-            feeType.equalsIgnoreCase(fee_type) &&
+            //feeType.equalsIgnoreCase(fee_type) &&
             preferredPIN.contains(pinCode)) {
         return true
     }
     return false
-
 }
