@@ -17,7 +17,7 @@ def today, tz, session
 String date, time
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-@Field int[] preferredPIN = [560037, 560066, 560103, 560034, 560076]
+@Field int[] preferredPIN = [560037, 560066, 560103, 560034, 560035]
 def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field def min_age = 45
 @Field def doseType = 2
