@@ -17,12 +17,12 @@ def today, tz, session
 String date, time
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-@Field int[] preferredPIN = [560037, 560103, 560034, 560035]
+@Field int[] preferredPIN = [560037, 560103, 560034, 560035, 560066]
 def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field def min_age = 45
 @Field def doseType = 2
 @Field String vaccine = "COVISHIELD"
-@Field String fee_type = "Free" //not used currently in comparison
+@Field String fee_type = "Paid" //not used currently in comparison
 @Field int minimum_available_dose = 2
 int sleepSeconds = 1800 //30 minutes
 
@@ -116,7 +116,7 @@ boolean CheckConditions(int age, int doseCapacity, String vaccineName, String fe
     if (age == min_age &&
             doseCapacity >= minimum_available_dose &&
             vaccineName.equalsIgnoreCase(vaccine) &&
-            //feeType.equalsIgnoreCase(fee_type) &&
+            feeType.equalsIgnoreCase(fee_type) &&
             preferredPIN.contains(pinCode)) {
         return true
     }
