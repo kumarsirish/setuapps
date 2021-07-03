@@ -57,7 +57,8 @@ while (true) {
                                 dose_capacity,
                                 session.vaccine,
                                 vaccination.centers[i].fee_type,
-                                vaccination.centers[i].pincode)) {
+                                vaccination.centers[i].pincode,
+                                session.allow_all_age)) {
                             String msgText = vaccination.centers[i].fee_type.toUpperCase()+" [" + dose_capacity + "] " +
                                     vaccination.centers[i].name + " " + vaccination.centers[i].pincode + "\n"
                             msgList.add(mapCounter++,[session.date,msgText]) //append to msg list, it will used later for sorting on date
@@ -112,8 +113,8 @@ def PosttoSlack(String messageText, def webHook) {
     }
 }
 
-boolean CheckConditions(int age, int doseCapacity, String vaccineName, String feeType, int pinCode) {
-    if (age == min_age &&
+boolean CheckConditions(int age, int doseCapacity, String vaccineName, String feeType, int pinCode, Boolean allowAll) {
+    if ( ((age == min_age) || ( age == 18 && allowAll == true)) &&
             doseCapacity >= minimum_available_dose &&
             vaccineName.equalsIgnoreCase(vaccine) &&
             feeType.equalsIgnoreCase(fee_type) &&
