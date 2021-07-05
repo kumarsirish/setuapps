@@ -17,16 +17,16 @@ def today, tz, session
 String date, time
 def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural"]
 //def districtMap = ["294": "BBMP", "265": "Bangalore Urban", "276": "Bangalore Rural", "145" : "East Delhi"]
-@Field int[] preferredPIN = [560037, 560103, 560034, 560035, 560066]
+@Field int[] preferredPIN = [560037, 560103, 560066]
 def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
-@Field def min_age = 45
+@Field def min_age = 18
 @Field def doseType = 2
 @Field String vaccine = "COVISHIELD"
 @Field String fee_type = "Paid" //not used currently in comparison
 @Field int minimum_available_dose = 2
-int sleepSeconds = 1800 //30 minutes
+int sleepSeconds = 7200 //2 hours
 
-int chimeFreq = 4 // every 2 hours
+int chimeFreq = 8 // every 2 hours
 int sendAliveMsg = chimeFreq * (3600 / sleepSeconds)
 int iterationCount = 100 // Set to higher value so that chime gets tested. It will reset to 0 in the loop below which is fine.
 String hourlyChime
