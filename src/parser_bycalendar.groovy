@@ -24,9 +24,9 @@ def slackWebhook = System.getenv('SLACK_WEBHOOK') ?: 'none'
 @Field String vaccine = "COVISHIELD"
 @Field String fee_type = "Paid" //not used currently in comparison
 @Field int minimum_available_dose = 2
-int sleepSeconds = 7200 //2 hours
+int sleepSeconds = 21600 //6 hours
 
-int chimeFreq = 8 // every 2 hours
+int chimeFreq = 8 // every 8 hours
 int sendAliveMsg = chimeFreq * (3600 / sleepSeconds)
 int iterationCount = 100 // Set to higher value so that chime gets tested. It will reset to 0 in the loop below which is fine.
 String hourlyChime
